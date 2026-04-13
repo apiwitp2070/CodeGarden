@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Home, Search } from 'lucide-react'
+import { Home, Search, Star } from 'lucide-react'
 
 export function Sidebar() {
   return (
@@ -42,6 +42,13 @@ export function Sidebar() {
           >
             <Search className="size-4" />
             Explore
+          </Link>
+          <Link
+            to="/favourites"
+            className="flex items-center gap-3 rounded-(--radius) px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-surface-container hover:text-foreground [&.active]:bg-surface-container-high [&.active]:text-primary"
+          >
+            <Star className="size-4" />
+            Favourites
           </Link>
         </nav>
       </div>

@@ -1,6 +1,6 @@
-import { TagChip } from './tag-chip'
 import { formatDistanceToNow } from 'date-fns'
 import { Link } from '@tanstack/react-router'
+import { Star } from 'lucide-react'
 
 interface SnippetCardProps {
   id: string
@@ -10,6 +10,8 @@ interface SnippetCardProps {
   htmlPreview: string
   createdAt: Date
   authorName?: string
+  isFavorited?: boolean
+  onFavoriteToggle?: (id: string) => void
 }
 
 export function SnippetCard({
@@ -19,7 +21,9 @@ export function SnippetCard({
   tags,
   htmlPreview,
   createdAt,
-  authorName
+  authorName,
+  isFavorited,
+  onFavoriteToggle
 }: SnippetCardProps) {
   return (
     <div className="group relative flex flex-col gap-4 rounded-(--radius) bg-card p-5 shadow-[0_24px_48px_rgba(3,8,20,0.22)] transition-all hover:bg-surface-container-high hover:shadow-[0_28px_56px_rgba(3,8,20,0.28)]">
@@ -49,6 +53,19 @@ export function SnippetCard({
             </p>
           )}
         </div>
+        {onFavoriteToggle && (
+          <button
+            className="relative z-20 shrink-0 rounded-full p-1.5 text-muted-foreground transition-colors hover:text-yellow-400"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onFavoriteToggle(id)
+            }}
+            aria-label={isFavorited ? 'Remove from favourites' : 'Add to favourites'}
+          >
+            <Star className={`size-4 ${isFavorited ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+          </button>
+        )}
       </div>
 
       <div className="relative mt-2 max-h-32 overflow-hidden rounded-(--radius) bg-surface-recessed p-4 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">

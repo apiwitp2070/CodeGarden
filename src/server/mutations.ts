@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start';
 import { db } from '@/db';
-import { snippets } from '@/db/schema';
+import { snippets, userFavorites } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { redirect } from '@tanstack/react-router';
 import { requireCurrentSession } from './auth.server';
@@ -64,4 +64,26 @@ export const deleteSnippet = createServerFn({ method: 'POST' })
       .delete(snippets)
       .where(and(eq(snippets.id, data.id), eq(snippets.authorId, session.user.id)));
     throw redirect({ to: '/' });
+  });
+
+export const toggleFavorite = createServerFn({ method: 'POST' })
+  .inputValidator((d: { snippetId: string }) => d)
+  .handler(async ({ data }) => {
+    const session = await requireCurrentSession();
+    const userId = session.user.id;
+
+    const [existing] = await db
+      .select()
+      .from(userFavorites)
+      .where(and(eq(userFavorites.userId, userId), eq(userFavorites.snippetId, data.snippetId)));
+
+    if (existing) {
+      await db
+        .delete(userFavorites)
+        .where(and(eq(userFavorites.userId, userId), eq(userFavorites.snippetId, data.snippetId)));
+      return { favorited: false };
+    } else {
+      await db.insert(userFavorites).values({ userId, snippetId: data.snippetId });
+      return { favorited: true };
+    }
   });

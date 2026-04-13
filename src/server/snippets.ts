@@ -1,13 +1,14 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '@/db'
-import { snippets, tags, snippetTags, users } from '@/db/schema'
+import { snippets, tags, snippetTags, users, userFavorites } from '@/db/schema'
 import { and, desc, eq, inArray, sql } from 'drizzle-orm'
 import { getHighlightedHtml } from './highlight'
-import { requireCurrentSession } from './auth.server'
+import { getCurrentSession, requireCurrentSession } from './auth.server'
 
 export const listSnippets = createServerFn({ method: 'GET' })
-  .inputValidator((d: { q?: string; limit?: number; offset?: number }) => d)
-  .handler(async ({ data: { q, limit = 20, offset = 0 } }) => {
+  .inputValidator((d: { q?: string; limit?: number; offset?: number; languages?: string[] }) => d)
+  .handler(async ({ data: { q, limit = 20, offset = 0, languages } }) => {
+    const langFilter = languages?.length ? inArray(snippets.language, languages) : undefined
     let query
 
     if (q) {
@@ -37,11 +38,14 @@ export const listSnippets = createServerFn({ method: 'GET' })
         .from(snippets)
         .leftJoin(users, eq(snippets.authorId, users.id))
         .where(
-          sql`
-        "search_vector" @@ to_tsquery('english', ${prefixQuery})
-        OR "title" ILIKE ${pattern}
-        OR "description" ILIKE ${pattern}
-      `
+          and(
+            sql`
+          "search_vector" @@ to_tsquery('english', ${prefixQuery})
+          OR "title" ILIKE ${pattern}
+          OR "description" ILIKE ${pattern}
+        `,
+            langFilter
+          )
         )
         .orderBy(sql`rank DESC`)
         .limit(limit)
@@ -59,6 +63,7 @@ export const listSnippets = createServerFn({ method: 'GET' })
         })
         .from(snippets)
         .leftJoin(users, eq(snippets.authorId, users.id))
+        .where(langFilter)
         .orderBy(desc(snippets.createdAt))
         .limit(limit)
         .offset(offset)
@@ -127,13 +132,74 @@ export const getSnippet = createServerFn({ method: 'GET' })
 
     const htmlCode = await getHighlightedHtml(result.snippet.codeBody, result.snippet.language)
 
+    const session = await getCurrentSession()
+    let isFavorited = false
+    if (session?.user?.id) {
+      const [fav] = await db
+        .select()
+        .from(userFavorites)
+        .where(
+          and(
+            eq(userFavorites.userId, session.user.id),
+            eq(userFavorites.snippetId, result.snippet.id)
+          )
+        )
+      isFavorited = Boolean(fav)
+    }
+
     return {
       ...result.snippet,
       author: result.author?.id ? result.author : null,
       tags: relations.map((r) => r.tag),
-      htmlCode
+      htmlCode,
+      isFavorited
     }
   })
+
+export const getMyFavoriteIds = createServerFn({ method: 'GET' }).handler(async () => {
+  const session = await getCurrentSession()
+  if (!session?.user?.id) return []
+  const rows = await db
+    .select({ snippetId: userFavorites.snippetId })
+    .from(userFavorites)
+    .where(eq(userFavorites.userId, session.user.id))
+  return rows.map((r) => r.snippetId)
+})
+
+export const getUserFavorites = createServerFn({ method: 'GET' }).handler(async () => {
+  const session = await requireCurrentSession()
+  const results = await db
+    .select({
+      snippet: snippets,
+      author: { id: users.id, name: users.name, image: users.image }
+    })
+    .from(userFavorites)
+    .innerJoin(snippets, eq(userFavorites.snippetId, snippets.id))
+    .leftJoin(users, eq(snippets.authorId, users.id))
+    .where(eq(userFavorites.userId, session.user.id))
+    .orderBy(desc(userFavorites.createdAt))
+
+  return Promise.all(
+    results.map(async ({ snippet, author }) => {
+      const tagRows = await db
+        .select({ tag: tags })
+        .from(snippetTags)
+        .innerJoin(tags, eq(snippetTags.tagId, tags.id))
+        .where(eq(snippetTags.snippetId, snippet.id))
+      const htmlPreview = await getHighlightedHtml(
+        snippet.codeBody.split('\n').slice(0, 8).join('\n'),
+        snippet.language
+      )
+      return {
+        ...snippet,
+        author: author?.id ? author : null,
+        tags: tagRows.map((r) => r.tag),
+        htmlPreview,
+        isFavorited: true as const
+      }
+    })
+  )
+})
 
 export const getEditableSnippet = createServerFn({ method: 'GET' })
   .inputValidator((d: { id: string }) => d)

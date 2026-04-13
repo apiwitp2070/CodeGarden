@@ -13,9 +13,10 @@ export function SearchInput() {
 
   const inputRef = useRef<HTMLInputElement>(null)
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     const value = inputRef.current?.value.trim()
+    if (!value && isExplorePage) handleClear()
     if (!value) return
     navigate({ to: '/explore', search: { q: value } })
   }

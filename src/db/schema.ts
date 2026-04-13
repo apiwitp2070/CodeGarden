@@ -94,6 +94,20 @@ export const snippets = pgTable('snippets', {
   updatedAt: timestamp('updated_at').defaultNow()
 })
 
+export const userSettings = pgTable('user_settings', {
+  id: char('id', { length: 26 })
+    .$defaultFn(() => ulid())
+    .primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  languagePreferences: text('language_preferences')
+    .array()
+    .default(sql`'{}'::text[]`)
+    .notNull()
+})
+
 export const snippetTags = pgTable(
   'snippet_tags',
   {
@@ -107,11 +121,28 @@ export const snippetTags = pgTable(
   (t) => [primaryKey({ columns: [t.snippetId, t.tagId] })]
 )
 
+export const userFavorites = pgTable(
+  'user_favorites',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    snippetId: char('snippet_id', { length: 26 })
+      .notNull()
+      .references(() => snippets.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').defaultNow()
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.snippetId] })]
+)
+
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   snippets: many(snippets),
   sessions: many(sessions),
-  accounts: many(accounts)
+  accounts: many(accounts),
+  settings: one(userSettings, { fields: [users.id], references: [userSettings.userId] }),
+  favorites: many(userFavorites),
+  comments: many(snippetComments)
 }))
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -133,7 +164,9 @@ export const snippetsRelations = relations(snippets, ({ one, many }) => ({
     fields: [snippets.authorId],
     references: [users.id]
   }),
-  tags: many(snippetTags)
+  tags: many(snippetTags),
+  favorites: many(userFavorites),
+  comments: many(snippetComments)
 }))
 
 export const tagsRelations = relations(tags, ({ many }) => ({
@@ -148,5 +181,45 @@ export const snippetTagsRelations = relations(snippetTags, ({ one }) => ({
   tag: one(tags, {
     fields: [snippetTags.tagId],
     references: [tags.id]
+  })
+}))
+
+export const snippetComments = pgTable('snippet_comments', {
+  id: char('id', { length: 26 })
+    .$defaultFn(() => ulid())
+    .primaryKey(),
+  snippetId: char('snippet_id', { length: 26 })
+    .notNull()
+    .references(() => snippets.id, { onDelete: 'cascade' }),
+  authorId: text('author_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  type: text('type', { enum: ['comment', 'suggestion'] }).notNull().default('comment'),
+  body: text('body').notNull(),
+  suggestionCode: text('suggestion_code'),
+  status: text('status', { enum: ['open', 'merged'] }).notNull().default('open'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+})
+
+export const userFavoritesRelations = relations(userFavorites, ({ one }) => ({
+  user: one(users, {
+    fields: [userFavorites.userId],
+    references: [users.id]
+  }),
+  snippet: one(snippets, {
+    fields: [userFavorites.snippetId],
+    references: [snippets.id]
+  })
+}))
+
+export const snippetCommentsRelations = relations(snippetComments, ({ one }) => ({
+  snippet: one(snippets, {
+    fields: [snippetComments.snippetId],
+    references: [snippets.id]
+  }),
+  author: one(users, {
+    fields: [snippetComments.authorId],
+    references: [users.id]
   })
 }))

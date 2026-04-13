@@ -12,17 +12,7 @@ import { css } from '@codemirror/lang-css'
 import { json } from '@codemirror/lang-json'
 import type { Extension } from '@codemirror/state'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
-
-const LANGUAGES = [
-  'javascript',
-  'typescript',
-  'python',
-  'html',
-  'css',
-  'json',
-  'bash',
-  'sql'
-] as const
+import { LANGUAGES } from '@/lib/languages'
 
 function getExtensions(language: string): Extension[] {
   switch (language) {

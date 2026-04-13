@@ -12,11 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppFavouritesRouteImport } from './routes/_app/favourites'
 import { Route as AppExploreRouteImport } from './routes/_app/explore'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppSnippetsNewRouteImport } from './routes/_app/snippets/new'
 import { Route as AppSnippetsSnippetIdRouteImport } from './routes/_app/snippets/$snippetId'
-import { Route as AppSnippetsSnippetIdEditRouteImport } from './routes/_app/snippets/$snippetId/edit'
+import { Route as AppSnippetsSnippetIdEditRouteImport } from './routes/_app/snippets/$snippetId.edit'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -30,6 +32,16 @@ const AuthIndexRoute = AuthIndexRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFavouritesRoute = AppFavouritesRouteImport.update({
+  id: '/favourites',
+  path: '/favourites',
   getParentRoute: () => AppRoute,
 } as any)
 const AppExploreRoute = AppExploreRouteImport.update({
@@ -62,6 +74,8 @@ const AppSnippetsSnippetIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/explore': typeof AppExploreRoute
+  '/favourites': typeof AppFavouritesRoute
+  '/settings': typeof AppSettingsRoute
   '/auth/': typeof AuthIndexRoute
   '/snippets/$snippetId': typeof AppSnippetsSnippetIdRouteWithChildren
   '/snippets/new': typeof AppSnippetsNewRoute
@@ -70,6 +84,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/explore': typeof AppExploreRoute
+  '/favourites': typeof AppFavouritesRoute
+  '/settings': typeof AppSettingsRoute
   '/': typeof AppIndexRoute
   '/auth': typeof AuthIndexRoute
   '/snippets/$snippetId': typeof AppSnippetsSnippetIdRouteWithChildren
@@ -81,6 +97,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_app/explore': typeof AppExploreRoute
+  '/_app/favourites': typeof AppFavouritesRoute
+  '/_app/settings': typeof AppSettingsRoute
   '/_app/': typeof AppIndexRoute
   '/auth/': typeof AuthIndexRoute
   '/_app/snippets/$snippetId': typeof AppSnippetsSnippetIdRouteWithChildren
@@ -93,6 +111,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/explore'
+    | '/favourites'
+    | '/settings'
     | '/auth/'
     | '/snippets/$snippetId'
     | '/snippets/new'
@@ -101,6 +121,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/explore'
+    | '/favourites'
+    | '/settings'
     | '/'
     | '/auth'
     | '/snippets/$snippetId'
@@ -111,6 +133,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/_app/explore'
+    | '/_app/favourites'
+    | '/_app/settings'
     | '/_app/'
     | '/auth/'
     | '/_app/snippets/$snippetId'
@@ -146,6 +170,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/favourites': {
+      id: '/_app/favourites'
+      path: '/favourites'
+      fullPath: '/favourites'
+      preLoaderRoute: typeof AppFavouritesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/explore': {
@@ -199,6 +237,8 @@ const AppSnippetsSnippetIdRouteWithChildren =
 
 interface AppRouteChildren {
   AppExploreRoute: typeof AppExploreRoute
+  AppFavouritesRoute: typeof AppFavouritesRoute
+  AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppSnippetsSnippetIdRoute: typeof AppSnippetsSnippetIdRouteWithChildren
   AppSnippetsNewRoute: typeof AppSnippetsNewRoute
@@ -206,6 +246,8 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppExploreRoute: AppExploreRoute,
+  AppFavouritesRoute: AppFavouritesRoute,
+  AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
   AppSnippetsSnippetIdRoute: AppSnippetsSnippetIdRouteWithChildren,
   AppSnippetsNewRoute: AppSnippetsNewRoute,
