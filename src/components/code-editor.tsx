@@ -1,19 +1,16 @@
-import { lazy, Suspense } from 'react';
-import type { ReactCodeMirrorProps } from '@uiw/react-codemirror';
-import { placeholder as cmPlaceholder } from '@codemirror/view';
-import { Skeleton } from './ui/skeleton';
+import { lazy, Suspense } from 'react'
+import type { ReactCodeMirrorProps } from '@uiw/react-codemirror'
+import { placeholder as cmPlaceholder } from '@codemirror/view'
+import { Skeleton } from './ui/skeleton'
 
-const CodeMirror = lazy(() => import('@uiw/react-codemirror'));
+const CodeMirror = lazy(() => import('@uiw/react-codemirror'))
 
 export function CodeEditor({ placeholder, extensions = [], ...props }: ReactCodeMirrorProps) {
   return (
-    <Suspense fallback={<Skeleton className="w-full h-64 rounded-[var(--radius)] bg-[#040a18]" />}>
+    <Suspense fallback={<Skeleton className="w-full h-64 rounded-(--radius) bg-[#040a18]" />}>
       <CodeMirror
         theme="dark"
-        extensions={[
-          ...(placeholder ? [cmPlaceholder(placeholder)] : []),
-          ...extensions,
-        ]}
+        extensions={[...(placeholder ? [cmPlaceholder(placeholder)] : []), ...extensions]}
         basicSetup={{
           lineNumbers: true,
           foldGutter: false,
@@ -28,12 +25,12 @@ export function CodeEditor({ placeholder, extensions = [], ...props }: ReactCode
           highlightActiveLineGutter: false,
           highlightSelectionMatches: false,
           searchKeymap: false,
-          bracketMatching: true,
+          bracketMatching: true
         }}
-        className="overflow-hidden rounded-[var(--radius)] bg-surface-recessed font-mono text-sm leading-relaxed shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+        className="overflow-hidden rounded-(--radius) bg-surface-recessed font-mono text-sm leading-relaxed shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
         {...props}
         placeholder={undefined}
       />
     </Suspense>
-  );
+  )
 }

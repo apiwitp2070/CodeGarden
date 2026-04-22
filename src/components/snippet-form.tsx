@@ -37,7 +37,7 @@ const snippetSchema = z.object({
   description: z.string(),
   language: z.string().min(1, 'Language is required.'),
   codeBody: z.string().min(1, 'Code body is required.'),
-  keywords: z.string(),
+  keywords: z.string()
 })
 
 export type SnippetFormValues = z.infer<typeof snippetSchema>
@@ -70,8 +70,8 @@ export function SnippetForm({
       description: initialValues?.description ?? '',
       language: initialValues?.language ?? 'javascript',
       codeBody: initialValues?.codeBody ?? '',
-      keywords: initialValues?.keywords ?? '',
-    },
+      keywords: initialValues?.keywords ?? ''
+    }
   })
 
   const language = watch('language')
@@ -93,7 +93,7 @@ export function SnippetForm({
               Delete
             </Button>
           )}
-          <Button type="submit" disabled={isSubmitting} className="btn-emerald font-semibold">
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Saving…' : submitLabel}
           </Button>
         </div>
@@ -145,7 +145,9 @@ export function SnippetForm({
                 </Select>
               )}
             />
-            {errors.language && <p className="text-xs text-destructive">{errors.language.message}</p>}
+            {errors.language && (
+              <p className="text-xs text-destructive">{errors.language.message}</p>
+            )}
           </div>
 
           <div className="flex flex-1 flex-col gap-2">

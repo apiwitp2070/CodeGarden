@@ -90,7 +90,7 @@ export function CommentForm({
               <RadioGroup
                 value={field.value}
                 onValueChange={field.onChange}
-                className="flex flex-row gap-6"
+                className="flex flex-col"
               >
                 <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
                   <RadioGroupItem value="comment" />

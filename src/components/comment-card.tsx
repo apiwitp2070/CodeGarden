@@ -19,7 +19,7 @@ interface Comment {
   type: 'comment' | 'suggestion'
   body: string
   suggestionCode: string | null
-  status: 'open' | 'merged'
+  status: 'open' | 'merged' | 'rejected'
   createdAt: Date | null
   updatedAt: Date | null
   authorId: string
@@ -41,6 +41,7 @@ interface CommentCardProps {
   snippetAuthorId: string | null
   onDelete: (commentId: string) => Promise<void>
   onAccept: (commentId: string) => Promise<void>
+  onReject: (commentId: string) => Promise<void>
   onEdit: (commentId: string, values: { body: string; suggestionCode?: string }) => Promise<void>
 }
 
@@ -83,18 +84,30 @@ export function CommentCard({
   snippetAuthorId,
   onDelete,
   onAccept,
+  onReject,
   onEdit
 }: CommentCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [isPending, setIsPending] = useState(false)
+  const [isHighlighted, setIsHighlighted] = useState(false)
 
   const isCommentAuthor = currentUserId === comment.authorId
   const isSnippetAuthor = currentUserId === snippetAuthorId
   const isMerged = comment.status === 'merged'
+  const isRejected = comment.status === 'rejected'
 
-  const canEdit = isCommentAuthor && !isMerged
-  const canDelete = (isCommentAuthor || isSnippetAuthor) && !isMerged
-  const canAccept = isSnippetAuthor && comment.type === 'suggestion' && !isMerged
+  const canEdit = isCommentAuthor && comment.status === 'open'
+  const canDelete = (isCommentAuthor || isSnippetAuthor) && comment.status === 'open'
+  const canAccept = isSnippetAuthor && comment.type === 'suggestion' && comment.status === 'open'
+  const canReject = canAccept
+
+  useEffect(() => {
+    if (window.location.hash === `#comment-${comment.id}`) {
+      setIsHighlighted(true)
+      const t = setTimeout(() => setIsHighlighted(false), 2000)
+      return () => clearTimeout(t)
+    }
+  }, [comment.id])
 
   async function handleDelete() {
     if (!confirm('Delete this comment?')) return
@@ -110,6 +123,15 @@ export function CommentCard({
     setIsPending(true)
     try {
       await onAccept(comment.id)
+    } finally {
+      setIsPending(false)
+    }
+  }
+
+  async function handleReject() {
+    setIsPending(true)
+    try {
+      await onReject(comment.id)
     } finally {
       setIsPending(false)
     }
@@ -142,7 +164,12 @@ export function CommentCard({
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-(--radius) border border-border p-5">
+    <div
+      id={`comment-${comment.id}`}
+      className={`flex flex-col gap-4 rounded-(--radius) border p-5 transition-all duration-500 ${
+        isHighlighted ? 'border-primary ring-2 ring-primary/30' : 'border-border'
+      }`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-sm">
@@ -163,6 +190,11 @@ export function CommentCard({
           {isMerged && (
             <span className="rounded-full bg-green-500/15 px-2 py-0.5 font-space text-xs font-semibold text-green-400">
               merged
+            </span>
+          )}
+          {isRejected && (
+            <span className="rounded-full bg-red-500/15 px-2 py-0.5 font-space text-xs font-semibold text-red-400">
+              rejected
             </span>
           )}
           {(canEdit || canDelete) && (
@@ -205,12 +237,25 @@ export function CommentCard({
         />
       )}
 
-      {/* Accept action */}
-      {canAccept && (
-        <div className="flex justify-end">
-          <Button size="sm" onClick={handleAccept} disabled={isPending}>
-            Accept Suggestion
-          </Button>
+      {/* Accept / Reject actions */}
+      {(canAccept || canReject) && (
+        <div className="flex justify-end gap-2">
+          {canReject && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleReject}
+              disabled={isPending}
+              className="text-destructive hover:text-destructive"
+            >
+              Reject
+            </Button>
+          )}
+          {canAccept && (
+            <Button size="sm" onClick={handleAccept} disabled={isPending}>
+              Accept Suggestion
+            </Button>
+          )}
         </div>
       )}
     </div>

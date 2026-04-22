@@ -1,14 +1,21 @@
 import { formatDistanceToNow } from 'date-fns'
 import { createFileRoute, Outlet, useChildMatches, useRouter } from '@tanstack/react-router'
-import { Star } from 'lucide-react'
-import { useState } from 'react'
+import { Check, Copy, Star } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { CodeBlock } from '@/components/code-block'
 import { TagChip } from '@/components/tag-chip'
 import { Button } from '@/components/ui/button'
 import { authClient } from '@/lib/auth-client'
 import { getSnippet } from '@/server/snippets'
 import { toggleFavorite } from '@/server/mutations'
-import { getSnippetComments, createComment, updateComment, deleteComment, acceptSuggestion } from '@/server/comments'
+import {
+  getSnippetComments,
+  createComment,
+  updateComment,
+  deleteComment,
+  acceptSuggestion,
+  rejectSuggestion
+} from '@/server/comments'
 import { CommentForm } from '@/components/comment-form'
 import { CommentCard } from '@/components/comment-card'
 
@@ -36,6 +43,7 @@ function SnippetDetail() {
   const canEdit = session?.user.id === snippet.authorId
   const isLoggedIn = Boolean(session?.user)
   const [isPending, setIsPending] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   async function handleToggleFavorite() {
     if (isPending) return
@@ -47,6 +55,20 @@ function SnippetDetail() {
       setIsPending(false)
     }
   }
+
+  function handleCopy() {
+    navigator.clipboard.writeText(snippet.codeBody)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  // Scroll to a specific comment when URL has #comment-<id>
+  useEffect(() => {
+    const hash = window.location.hash
+    if (!hash.startsWith('#comment-')) return
+    const el = document.getElementById(hash.slice(1))
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [comments])
 
   return (
     <div className="flex max-w-5xl flex-col gap-8">
@@ -81,9 +103,7 @@ function SnippetDetail() {
             >
               <Star
                 className={
-                  snippet.isFavorited
-                    ? 'fill-yellow-400 text-yellow-400'
-                    : 'text-muted-foreground'
+                  snippet.isFavorited ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
                 }
               />
             </Button>
@@ -93,6 +113,9 @@ function SnippetDetail() {
               <a href={`/snippets/${snippet.id}/edit`}>Edit Snippet</a>
             </Button>
           ) : null}
+          <Button variant="ghost" size="icon" onClick={handleCopy} aria-label="Copy code">
+            {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+          </Button>
         </div>
       </div>
 
@@ -159,6 +182,11 @@ function SnippetDetail() {
             }}
             onAccept={async (id) => {
               await acceptSuggestion({ data: { commentId: id } })
+              await router.invalidate()
+            }}
+            onReject={async (id) => {
+              await rejectSuggestion({ data: { commentId: id } })
+              await router.invalidate()
             }}
             onEdit={async (id, vals) => {
               await updateComment({ data: { commentId: id, ...vals } })
@@ -168,16 +196,21 @@ function SnippetDetail() {
         ))}
 
         {isLoggedIn && (
-          <div className="rounded-(--radius) border border-border p-5">
-            <CommentForm
-              snippetId={snippet.id}
-              snippetCode={snippet.codeBody}
-              language={snippet.language}
-              onSubmit={async (values) => {
-                await createComment({ data: values })
-                await router.invalidate()
-              }}
-            />
+          <div className="mt-6 flex flex-col gap-4">
+            <h2 className="font-display text-xl font-bold text-foreground">
+              Add Comment or Suggestion
+            </h2>
+            <div className="rounded-(--radius) border border-border p-5">
+              <CommentForm
+                snippetId={snippet.id}
+                snippetCode={snippet.codeBody}
+                language={snippet.language}
+                onSubmit={async (values) => {
+                  await createComment({ data: values })
+                  await router.invalidate()
+                }}
+              />
+            </div>
           </div>
         )}
       </section>

@@ -40,6 +40,7 @@ function FavouritesPage() {
               authorName={snippet.author?.name ?? undefined}
               isFavorited={true}
               onFavoriteToggle={handleToggleFavorite}
+              codeBody={snippet.codeBody}
             />
           ))}
         </div>

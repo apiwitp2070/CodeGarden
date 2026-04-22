@@ -2,7 +2,6 @@ import { createServerFn } from '@tanstack/react-start'
 import { db } from '@/db'
 import { snippetComments, snippets, users } from '@/db/schema'
 import { eq, asc } from 'drizzle-orm'
-import { redirect } from '@tanstack/react-router'
 import { requireCurrentSession } from './auth.server'
 import { sendSuggestionNotification } from './email'
 
@@ -119,5 +118,23 @@ export const acceptSuggestion = createServerFn({ method: 'POST' })
       .update(snippetComments)
       .set({ status: 'merged' })
       .where(eq(snippetComments.id, data.commentId))
-    throw redirect({ to: '/snippets/$snippetId', params: { snippetId: row.snippet.id } })
+  })
+
+export const rejectSuggestion = createServerFn({ method: 'POST' })
+  .inputValidator((d: { commentId: string }) => d)
+  .handler(async ({ data }) => {
+    const session = await requireCurrentSession()
+    const [row] = await db
+      .select({ comment: snippetComments, snippet: snippets })
+      .from(snippetComments)
+      .leftJoin(snippets, eq(snippetComments.snippetId, snippets.id))
+      .where(eq(snippetComments.id, data.commentId))
+    if (!row || !row.snippet) throw new Error('Not found')
+    if (row.snippet.authorId !== session.user.id) throw new Error('Only the snippet author can reject suggestions')
+    if (row.comment.type !== 'suggestion') throw new Error('Not a suggestion')
+    if (row.comment.status !== 'open') throw new Error('Already resolved')
+    await db
+      .update(snippetComments)
+      .set({ status: 'rejected' })
+      .where(eq(snippetComments.id, data.commentId))
   })

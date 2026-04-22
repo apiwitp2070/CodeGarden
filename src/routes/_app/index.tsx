@@ -48,6 +48,7 @@ function Homepage() {
               authorName={snippet.author?.name ?? undefined}
               isFavorited={favoriteIds.includes(snippet.id)}
               onFavoriteToggle={session?.user ? handleToggleFavorite : undefined}
+              codeBody={snippet.codeBody}
             />
           ))}
         </div>

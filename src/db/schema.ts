@@ -197,7 +197,7 @@ export const snippetComments = pgTable('snippet_comments', {
   type: text('type', { enum: ['comment', 'suggestion'] }).notNull().default('comment'),
   body: text('body').notNull(),
   suggestionCode: text('suggestion_code'),
-  status: text('status', { enum: ['open', 'merged'] }).notNull().default('open'),
+  status: text('status', { enum: ['open', 'merged', 'rejected'] }).notNull().default('open'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow()
 })
