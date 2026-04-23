@@ -18,23 +18,28 @@ function CreateSnippet() {
     language: string
     codeBody: string
     keywords: string
+    visibility: 'public' | 'private'
   }) => {
     setIsSubmitting(true)
-    await createSnippet({
-      data: {
-        title: values.title,
-        description: values.description || undefined,
-        language: values.language,
-        codeBody: values.codeBody,
-        keywords: values.keywords
-          ? values.keywords
-              .split(',')
-              .map((k) => k.trim())
-              .filter(Boolean)
-          : []
-      }
-    })
-    setIsSubmitting(false)
+    try {
+      await createSnippet({
+        data: {
+          title: values.title,
+          description: values.description || undefined,
+          language: values.language,
+          codeBody: values.codeBody,
+          keywords: values.keywords
+            ? values.keywords
+                .split(',')
+                .map((k) => k.trim())
+                .filter(Boolean)
+            : [],
+          visibility: values.visibility
+        }
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (

@@ -12,6 +12,7 @@ import { css } from '@codemirror/lang-css'
 import { json } from '@codemirror/lang-json'
 import type { Extension } from '@codemirror/state'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
+import { Lock } from 'lucide-react'
 import { LANGUAGES } from '@/lib/languages'
 
 function getExtensions(language: string): Extension[] {
@@ -37,7 +38,8 @@ const snippetSchema = z.object({
   description: z.string(),
   language: z.string().min(1, 'Language is required.'),
   codeBody: z.string().min(1, 'Code body is required.'),
-  keywords: z.string()
+  keywords: z.string(),
+  visibility: z.enum(['public', 'private'])
 })
 
 export type SnippetFormValues = z.infer<typeof snippetSchema>
@@ -70,7 +72,8 @@ export function SnippetForm({
       description: initialValues?.description ?? '',
       language: initialValues?.language ?? 'javascript',
       codeBody: initialValues?.codeBody ?? '',
-      keywords: initialValues?.keywords ?? ''
+      keywords: initialValues?.keywords ?? '',
+      visibility: initialValues?.visibility ?? 'public'
     }
   })
 
@@ -86,7 +89,7 @@ export function SnippetForm({
           {onDelete && (
             <Button
               type="button"
-              variant="ghost"
+              variant="secondary"
               onClick={onDelete}
               className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
@@ -125,6 +128,42 @@ export function SnippetForm({
 
         {/* Language + Keywords row */}
         <div className="flex flex-col gap-4 sm:flex-row">
+          {/* Visibility toggle */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-muted-foreground">Visibility</label>
+            <Controller
+              name="visibility"
+              control={control}
+              render={({ field }) => (
+                <div className="flex rounded-(--radius) border border-border overflow-hidden w-fit">
+                  <button
+                    type="button"
+                    onClick={() => field.onChange('public')}
+                    className={`px-4 py-2 text-sm font-medium transition-colors ${
+                      field.value === 'public'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-surface-container-low text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Public
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => field.onChange('private')}
+                    className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${
+                      field.value === 'private'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-surface-container-low text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <Lock className="size-3" />
+                    Private
+                  </button>
+                </div>
+              )}
+            />
+          </div>
+
           <div className="flex flex-col gap-2">
             <label className="text-sm font-semibold text-muted-foreground">Language *</label>
             <Controller

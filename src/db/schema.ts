@@ -89,6 +89,7 @@ export const snippets = pgTable('snippets', {
     .array()
     .default(sql`'{}'::text[]`),
   authorId: text('author_id').references(() => users.id, { onDelete: 'cascade' }),
+  visibility: text('visibility', { enum: ['public', 'private'] }).notNull().default('public'),
   searchVector: tsvector('search_vector'), // Maintained by SQL trigger for search indexing
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow()
@@ -135,6 +136,31 @@ export const userFavorites = pgTable(
   (t) => [primaryKey({ columns: [t.userId, t.snippetId] })]
 )
 
+export const collections = pgTable('collections', {
+  id: char('id', { length: 26 })
+    .$defaultFn(() => ulid())
+    .primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  authorId: text('author_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow()
+})
+
+export const collectionSnippets = pgTable(
+  'collection_snippets',
+  {
+    collectionId: char('collection_id', { length: 26 })
+      .notNull()
+      .references(() => collections.id, { onDelete: 'cascade' }),
+    snippetId: char('snippet_id', { length: 26 })
+      .notNull()
+      .references(() => snippets.id, { onDelete: 'cascade' }),
+    addedAt: timestamp('added_at').defaultNow()
+  },
+  (t) => [primaryKey({ columns: [t.collectionId, t.snippetId] })]
+)
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   snippets: many(snippets),
@@ -142,7 +168,8 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   accounts: many(accounts),
   settings: one(userSettings, { fields: [users.id], references: [userSettings.userId] }),
   favorites: many(userFavorites),
-  comments: many(snippetComments)
+  comments: many(snippetComments),
+  collections: many(collections)
 }))
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -221,5 +248,21 @@ export const snippetCommentsRelations = relations(snippetComments, ({ one }) => 
   author: one(users, {
     fields: [snippetComments.authorId],
     references: [users.id]
+  })
+}))
+
+export const collectionsRelations = relations(collections, ({ one, many }) => ({
+  author: one(users, { fields: [collections.authorId], references: [users.id] }),
+  snippets: many(collectionSnippets)
+}))
+
+export const collectionSnippetsRelations = relations(collectionSnippets, ({ one }) => ({
+  collection: one(collections, {
+    fields: [collectionSnippets.collectionId],
+    references: [collections.id]
+  }),
+  snippet: one(snippets, {
+    fields: [collectionSnippets.snippetId],
+    references: [snippets.id]
   })
 }))

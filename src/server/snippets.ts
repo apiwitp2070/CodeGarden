@@ -1,13 +1,19 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '@/db'
 import { snippets, tags, snippetTags, users, userFavorites } from '@/db/schema'
-import { and, desc, eq, inArray, sql } from 'drizzle-orm'
+import { and, desc, eq, inArray, or, sql } from 'drizzle-orm'
 import { getHighlightedHtml } from './highlight'
 import { getCurrentSession, requireCurrentSession } from './auth.server'
 
 export const listSnippets = createServerFn({ method: 'GET' })
   .inputValidator((d: { q?: string; limit?: number; offset?: number; languages?: string[] }) => d)
   .handler(async ({ data: { q, limit = 20, offset = 0, languages } }) => {
+    const session = await getCurrentSession()
+    const userId = session?.user?.id ?? null
+    const visibilityFilter = userId
+      ? or(eq(snippets.visibility, 'public'), eq(snippets.authorId, userId))
+      : eq(snippets.visibility, 'public')
+
     const langFilter = languages?.length ? inArray(snippets.language, languages) : undefined
     let query
 
@@ -44,7 +50,8 @@ export const listSnippets = createServerFn({ method: 'GET' })
           OR "title" ILIKE ${pattern}
           OR "description" ILIKE ${pattern}
         `,
-            langFilter
+            langFilter,
+            visibilityFilter
           )
         )
         .orderBy(sql`rank DESC`)
@@ -63,7 +70,7 @@ export const listSnippets = createServerFn({ method: 'GET' })
         })
         .from(snippets)
         .leftJoin(users, eq(snippets.authorId, users.id))
-        .where(langFilter)
+        .where(and(langFilter, visibilityFilter))
         .orderBy(desc(snippets.createdAt))
         .limit(limit)
         .offset(offset)
@@ -124,6 +131,12 @@ export const getSnippet = createServerFn({ method: 'GET' })
 
     if (!result) throw new Error('Snippet not found')
 
+    const session = await getCurrentSession()
+    const isOwner = session?.user?.id === result.snippet.authorId
+    if (result.snippet.visibility === 'private' && !isOwner) {
+      throw new Error('Snippet not found')
+    }
+
     const relations = await db
       .select({ tag: tags })
       .from(snippetTags)
@@ -132,7 +145,6 @@ export const getSnippet = createServerFn({ method: 'GET' })
 
     const htmlCode = await getHighlightedHtml(result.snippet.codeBody, result.snippet.language)
 
-    const session = await getCurrentSession()
     let isFavorited = false
     if (session?.user?.id) {
       const [fav] = await db
@@ -176,7 +188,12 @@ export const getUserFavorites = createServerFn({ method: 'GET' }).handler(async 
     .from(userFavorites)
     .innerJoin(snippets, eq(userFavorites.snippetId, snippets.id))
     .leftJoin(users, eq(snippets.authorId, users.id))
-    .where(eq(userFavorites.userId, session.user.id))
+    .where(
+      and(
+        eq(userFavorites.userId, session.user.id),
+        or(eq(snippets.visibility, 'public'), eq(snippets.authorId, session.user.id))
+      )
+    )
     .orderBy(desc(userFavorites.createdAt))
 
   return Promise.all(
@@ -200,6 +217,41 @@ export const getUserFavorites = createServerFn({ method: 'GET' }).handler(async 
     })
   )
 })
+
+export const getUserProfile = createServerFn({ method: 'GET' })
+  .inputValidator((d: { userId: string }) => d)
+  .handler(async ({ data: { userId } }) => {
+    const session = await getCurrentSession()
+    const viewerId = session?.user?.id ?? null
+
+    const [user] = await db
+      .select({ id: users.id, name: users.name, image: users.image })
+      .from(users)
+      .where(eq(users.id, userId))
+
+    if (!user) throw new Error('User not found')
+
+    const isOwner = viewerId === userId
+    const visibilityFilter = isOwner ? undefined : eq(snippets.visibility, 'public')
+
+    const userSnippets = await db
+      .select({ snippet: snippets })
+      .from(snippets)
+      .where(and(eq(snippets.authorId, userId), visibilityFilter))
+      .orderBy(desc(snippets.createdAt))
+
+    const withPreviews = await Promise.all(
+      userSnippets.map(async ({ snippet }) => {
+        const htmlPreview = await getHighlightedHtml(
+          snippet.codeBody.split('\n').slice(0, 8).join('\n'),
+          snippet.language
+        )
+        return { ...snippet, author: user, tags: [] as { id: string; name: string }[], htmlPreview }
+      })
+    )
+
+    return { user, snippets: withPreviews, isOwner }
+  })
 
 export const getEditableSnippet = createServerFn({ method: 'GET' })
   .inputValidator((d: { id: string }) => d)

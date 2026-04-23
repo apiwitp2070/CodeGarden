@@ -2,6 +2,7 @@ import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/reac
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import TanStackQueryDevtools from '@/integrations/tanstack-query/devtools'
 import appCss from '@/styles.css?url'
 import { useEffect } from 'react'
@@ -103,6 +104,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="font-sans antialiased bg-surface-base text-foreground selection:bg-primary/20 flex min-h-screen flex-col overflow-hidden">
         <TooltipProvider>
           {children}
+          <ConfirmDialog />
 
           <TanStackDevtools
             config={{

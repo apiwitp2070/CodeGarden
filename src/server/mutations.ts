@@ -11,6 +11,7 @@ type SnippetInput = {
   codeBody: string;
   language: string;
   keywords?: string[];
+  visibility?: 'public' | 'private';
 };
 
 export const createSnippet = createServerFn({ method: 'POST' })
@@ -25,6 +26,7 @@ export const createSnippet = createServerFn({ method: 'POST' })
         codeBody: data.codeBody,
         language: data.language,
         keywords: data.keywords ?? [],
+        visibility: data.visibility ?? 'public',
         authorId: session.user.id,
       })
       .returning();
@@ -44,6 +46,7 @@ export const updateSnippet = createServerFn({ method: 'POST' })
         codeBody: data.codeBody,
         language: data.language,
         keywords: data.keywords ?? [],
+        visibility: data.visibility ?? 'public',
         updatedAt: new Date(),
       })
       .where(and(eq(snippets.id, data.id), eq(snippets.authorId, session.user.id)))
