@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from 'date-fns'
 import { createFileRoute, Outlet, useChildMatches, useRouter } from '@tanstack/react-router'
-import { Check, Copy, Star } from 'lucide-react'
+import { Check, Copy, FolderOpen, FolderPlus, Lock, Plus, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { CodeBlock } from '@/components/code-block'
 import { TagChip } from '@/components/tag-chip'
@@ -8,6 +8,21 @@ import { Button } from '@/components/ui/button'
 import { authClient } from '@/lib/auth-client'
 import { getSnippet } from '@/server/snippets'
 import { toggleFavorite } from '@/server/mutations'
+import {
+  getMyCollections,
+  createCollection,
+  addSnippetToCollection,
+  removeSnippetFromCollection,
+  getSnippetCollections
+} from '@/server/collections'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import { CreateCollectionDialog } from '@/components/common/create-collection-dialog'
 import {
   getSnippetComments,
   createComment,
@@ -25,7 +40,10 @@ export const Route = createFileRoute('/_app/snippets/$snippetId')({
       getSnippet({ data: { id: params.snippetId } }),
       getSnippetComments({ data: { snippetId: params.snippetId } })
     ])
-    return { snippet, comments }
+    const snippetCollections = await getSnippetCollections({
+      data: { snippetId: params.snippetId }
+    }).catch(() => [] as { id: string; name: string }[])
+    return { snippet, comments, snippetCollections }
   },
   component: SnippetDetailLayout
 })
@@ -36,14 +54,27 @@ function SnippetDetailLayout() {
   return <SnippetDetail />
 }
 
+function dispatchCollectionsUpdated() {
+  window.dispatchEvent(new CustomEvent('collections-updated'))
+}
+
 function SnippetDetail() {
-  const { snippet, comments } = Route.useLoaderData()
+  const { snippet, comments, snippetCollections } = Route.useLoaderData()
   const { data: session } = authClient.useSession()
   const router = useRouter()
   const canEdit = session?.user.id === snippet.authorId
   const isLoggedIn = Boolean(session?.user)
   const [isPending, setIsPending] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [userCollections, setUserCollections] = useState<{ id: string; name: string }[]>([])
+  const [newCollectionDialogOpen, setNewCollectionDialogOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isLoggedIn) return
+    getMyCollections()
+      .then(setUserCollections)
+      .catch(() => {})
+  }, [isLoggedIn])
 
   async function handleToggleFavorite() {
     if (isPending) return
@@ -71,13 +102,19 @@ function SnippetDetail() {
   }, [comments])
 
   return (
-    <div className="flex max-w-5xl flex-col gap-8">
+    <div className="flex max-w-full flex-col gap-8">
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
             <span className="rounded-full bg-surface-container-high px-3 py-1 text-xs font-semibold text-primary">
               {snippet.language}
             </span>
+            {snippet.visibility === 'private' && (
+              <span className="flex items-center gap-1 rounded-full bg-surface-container-high px-3 py-1 text-xs font-semibold text-muted-foreground">
+                <Lock className="size-3" />
+                Private
+              </span>
+            )}
             <span className="text-xs text-muted-foreground">
               Updated{' '}
               {formatDistanceToNow(new Date(snippet.updatedAt ?? snippet.createdAt ?? Date.now()), {
@@ -91,6 +128,20 @@ function SnippetDetail() {
               by <span className="font-medium text-primary">@{snippet.author.name}</span>
             </p>
           ) : null}
+          {snippetCollections.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              {snippetCollections.map((c) => (
+                <a
+                  key={c.id}
+                  href={`/collections/${c.id}`}
+                  className="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/20"
+                >
+                  <FolderOpen className="size-3" />
+                  {c.name}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-3">
           {isLoggedIn ? (
@@ -103,7 +154,7 @@ function SnippetDetail() {
             >
               <Star
                 className={
-                  snippet.isFavorited ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
+                  snippet.isFavorited ? 'fill-yellow-400 text-yellow-400' : 'text-foreground'
                 }
               />
             </Button>
@@ -113,6 +164,53 @@ function SnippetDetail() {
               <a href={`/snippets/${snippet.id}/edit`}>Edit Snippet</a>
             </Button>
           ) : null}
+          {isLoggedIn && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Add to collection">
+                  <FolderPlus className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {userCollections.length === 0 ? (
+                  <DropdownMenuItem disabled>No collections yet</DropdownMenuItem>
+                ) : (
+                  userCollections.map((c) => {
+                    const inCollection = snippetCollections.some((sc) => sc.id === c.id)
+                    return (
+                      <DropdownMenuItem
+                        key={c.id}
+                        onClick={async () => {
+                          if (inCollection) {
+                            await removeSnippetFromCollection({
+                              data: { collectionId: c.id, snippetId: snippet.id }
+                            }).catch(() => {})
+                          } else {
+                            await addSnippetToCollection({
+                              data: { collectionId: c.id, snippetId: snippet.id }
+                            }).catch(() => {})
+                          }
+                          await router.invalidate()
+                        }}
+                      >
+                        {inCollection ? (
+                          <Check className="mr-2 size-4 text-primary" />
+                        ) : (
+                          <FolderPlus className="mr-2 size-4" />
+                        )}
+                        {c.name}
+                      </DropdownMenuItem>
+                    )
+                  })
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setNewCollectionDialogOpen(true)}>
+                  <Plus className="mr-2 size-4" />
+                  New collection…
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <Button variant="ghost" size="icon" onClick={handleCopy} aria-label="Copy code">
             {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
           </Button>
@@ -214,6 +312,22 @@ function SnippetDetail() {
           </div>
         )}
       </section>
+
+      <CreateCollectionDialog
+        open={newCollectionDialogOpen}
+        onOpenChange={setNewCollectionDialogOpen}
+        onConfirm={async (name) => {
+          const newCol = await createCollection({ data: { name } })
+          if (newCol) {
+            setUserCollections((prev) => [newCol, ...prev])
+            await addSnippetToCollection({
+              data: { collectionId: newCol.id, snippetId: snippet.id }
+            })
+            dispatchCollectionsUpdated()
+            await router.invalidate()
+          }
+        }}
+      />
     </div>
   )
 }

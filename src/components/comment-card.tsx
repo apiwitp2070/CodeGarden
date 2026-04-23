@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { CommentForm } from '@/components/comment-form'
 import { getLanguageExtension } from '@/lib/codemirror-langs'
+import { dialog } from '@/utils/dialog'
 
 interface Comment {
   id: string
@@ -109,14 +110,20 @@ export function CommentCard({
     }
   }, [comment.id])
 
-  async function handleDelete() {
-    if (!confirm('Delete this comment?')) return
-    setIsPending(true)
-    try {
-      await onDelete(comment.id)
-    } finally {
-      setIsPending(false)
-    }
+  function handleDelete() {
+    dialog.danger({
+      title: 'Delete Comment',
+      description: 'Are you sure you want to delete this comment?',
+      confirmText: 'Delete',
+      onConfirm: async () => {
+        setIsPending(true)
+        try {
+          await onDelete(comment.id)
+        } finally {
+          setIsPending(false)
+        }
+      },
+    })
   }
 
   async function handleAccept() {

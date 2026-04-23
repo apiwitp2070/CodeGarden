@@ -92,9 +92,9 @@ export function Sidebar() {
         </nav>
 
         {session?.user && (
-          <div className="mt-2 border-t border-border pt-4">
+          <div className="mt-2 border-t border-border pt-6">
             <div className="mb-4 flex items-center justify-between px-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="text-xs font-semibold uppercase tracking-wider text-primary">
                 Collections
               </span>
               <button
