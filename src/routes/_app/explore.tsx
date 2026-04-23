@@ -31,8 +31,7 @@ type Snippet = Awaited<ReturnType<typeof listSnippets>>[number]
 export const Route = createFileRoute('/_app/explore')({
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
     q: typeof search.q === 'string' && search.q.trim() ? search.q.trim() : undefined,
-    langs:
-      typeof search.langs === 'string' && search.langs.trim() ? search.langs.trim() : undefined
+    langs: typeof search.langs === 'string' && search.langs.trim() ? search.langs.trim() : undefined
   }),
   loaderDeps: ({ search: { q, langs } }) => ({ q, langs }),
   loader: async ({ deps: { q, langs } }) => {
@@ -106,7 +105,7 @@ function ExplorePage() {
   useEffect(() => {
     if (!langs) {
       try {
-        const stored = localStorage.getItem('snippetvault_filters')
+        const stored = localStorage.getItem('codegarden_filters')
         if (stored) {
           const parsed = JSON.parse(stored) as { languages: string[] }
           if (parsed.languages.length > 0) {
@@ -127,7 +126,7 @@ function ExplorePage() {
 
   function handleFilterApply(selectedLangs: string[]) {
     const langsParam = selectedLangs.length > 0 ? selectedLangs.join(',') : undefined
-    localStorage.setItem('snippetvault_filters', JSON.stringify({ languages: selectedLangs }))
+    localStorage.setItem('codegarden_filters', JSON.stringify({ languages: selectedLangs }))
     if (session?.user) {
       saveUserSettings({ data: { languagePreferences: selectedLangs } }).catch(console.error)
     }
@@ -164,7 +163,9 @@ function ExplorePage() {
             </>
           ) : (
             <>
-              <p className="font-display text-2xl font-semibold text-foreground">No snippets found</p>
+              <p className="font-display text-2xl font-semibold text-foreground">
+                No snippets found
+              </p>
               <p className="mt-2 text-sm text-muted-foreground">
                 {activeLangs.length > 0
                   ? 'Try adjusting your language filter.'

@@ -39,7 +39,7 @@ export async function sendSuggestionNotification({
       ``,
       `View it here: ${snippetUrl}`,
       ``,
-      `— SnippetVault`
+      `— CodeGarden`
     ].join('\n')
   })
 }

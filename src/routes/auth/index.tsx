@@ -132,7 +132,7 @@ function AuthRoute() {
                 </svg>
               </div>
               <span className="font-display text-xl font-bold text-foreground">
-                Snippet<span className="text-primary">Vault</span>
+                Code<span className="text-primary">Garden</span>
               </span>
             </div>
 
@@ -263,7 +263,7 @@ function AuthRoute() {
 
             <footer className="mt-auto pb-8 pt-16">
               <div className="mx-auto flex max-w-md flex-col items-center opacity-60">
-                <p className="text-xs text-muted-foreground/70">© 2026 SnippetVault</p>
+                <p className="text-xs text-muted-foreground/70">© 2026 CodeGarden</p>
               </div>
             </footer>
           </div>

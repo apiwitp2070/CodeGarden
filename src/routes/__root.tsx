@@ -13,7 +13,7 @@ interface MyRouterContext {
   queryClient: QueryClient
 }
 
-const ACCENT_INIT_SCRIPT = `(function(){try{var valid=['sky','blue','indigo','lavender','violet'];var stored=window.localStorage.getItem('snippetvault_accent');if(stored&&valid.includes(stored)){document.documentElement.setAttribute('data-accent',stored)}else{document.documentElement.removeAttribute('data-accent')}}catch(e){}})();`
+const ACCENT_INIT_SCRIPT = `(function(){try{var valid=['sky','blue','indigo','lavender','violet'];var stored=window.localStorage.getItem('codegarden_accent');if(stored&&valid.includes(stored)){document.documentElement.setAttribute('data-accent',stored)}else{document.documentElement.removeAttribute('data-accent')}}catch(e){}})();`
 
 const ACCENT_COLORS: Record<string, string> = {
   emerald: '#75daa8',
@@ -26,7 +26,7 @@ const ACCENT_COLORS: Record<string, string> = {
 
 function applyFaviconFromStorage() {
   try {
-    const stored = localStorage.getItem('snippetvault_accent')
+    const stored = localStorage.getItem('codegarden_accent')
     const color = ACCENT_COLORS[stored ?? 'emerald'] ?? ACCENT_COLORS.emerald
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#0c1629"/><polyline points="12,10 7,16 12,22" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="20,10 25,16 20,22" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
     const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
@@ -58,7 +58,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'SnippetVault' }
+      { title: 'CodeGarden' }
     ],
     links: [
       {

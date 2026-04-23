@@ -21,9 +21,9 @@ function AppLayout() {
   const { settings } = Route.useLoaderData()
 
   useEffect(() => {
-    if (settings && localStorage.getItem('snippetvault_filters') === null) {
+    if (settings && localStorage.getItem('codegarden_filters') === null) {
       localStorage.setItem(
-        'snippetvault_filters',
+        'codegarden_filters',
         JSON.stringify({ languages: settings.languagePreferences ?? [] })
       )
     }

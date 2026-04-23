@@ -1,6 +1,6 @@
-# SnippetVault
+# CodeGarden
 
-SnippetVault is a full-stack code snippet manager built with TanStack Start, PostgreSQL, Drizzle ORM, Better Auth, Shiki, and CodeMirror.
+CodeGarden is a full-stack code snippet manager built with TanStack Start, PostgreSQL, Drizzle ORM, Better Auth, Shiki, and CodeMirror.
 
 ## Stack
 

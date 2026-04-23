@@ -52,7 +52,7 @@ export function Sidebar() {
           </svg>
         </div>
         <span className="font-display text-lg font-bold text-foreground">
-          Snippet<span className="text-primary">Vault</span>
+          Code<span className="text-primary">Garden</span>
         </span>
       </Link>
 

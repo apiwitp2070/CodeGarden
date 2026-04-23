@@ -23,7 +23,7 @@ const ACCENTS: { id: AccentId; label: string; color: string }[] = [
 
 function getStoredAccent(): AccentId {
   try {
-    const v = localStorage.getItem('snippetvault_accent')
+    const v = localStorage.getItem('codegarden_accent')
     if (v && ACCENTS.some((a) => a.id === v)) return v as AccentId
   } catch {}
   return 'emerald'
@@ -45,10 +45,10 @@ function applyAccent(id: AccentId) {
   const root = document.documentElement
   if (id === 'emerald') {
     root.removeAttribute('data-accent')
-    localStorage.removeItem('snippetvault_accent')
+    localStorage.removeItem('codegarden_accent')
   } else {
     root.setAttribute('data-accent', id)
-    localStorage.setItem('snippetvault_accent', id)
+    localStorage.setItem('codegarden_accent', id)
   }
   applyFavicon(id)
 }
@@ -88,7 +88,7 @@ function SettingsPage() {
   async function onSubmit(values: SettingsFormValues) {
     await saveUserSettings({ data: values })
     localStorage.setItem(
-      'snippetvault_filters',
+      'codegarden_filters',
       JSON.stringify({ languages: values.languagePreferences })
     )
     setSaved(true)
