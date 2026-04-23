@@ -16,8 +16,10 @@ import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppFavouritesRouteImport } from './routes/_app/favourites'
 import { Route as AppExploreRouteImport } from './routes/_app/explore'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AppUsersUserIdRouteImport } from './routes/_app/users/$userId'
 import { Route as AppSnippetsNewRouteImport } from './routes/_app/snippets/new'
 import { Route as AppSnippetsSnippetIdRouteImport } from './routes/_app/snippets/$snippetId'
+import { Route as AppCollectionsCollectionIdRouteImport } from './routes/_app/collections/$collectionId'
 import { Route as AppSnippetsSnippetIdEditRouteImport } from './routes/_app/snippets/$snippetId.edit'
 
 const AppRoute = AppRouteImport.update({
@@ -54,6 +56,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppUsersUserIdRoute = AppUsersUserIdRouteImport.update({
+  id: '/users/$userId',
+  path: '/users/$userId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSnippetsNewRoute = AppSnippetsNewRouteImport.update({
   id: '/snippets/new',
   path: '/snippets/new',
@@ -64,6 +71,12 @@ const AppSnippetsSnippetIdRoute = AppSnippetsSnippetIdRouteImport.update({
   path: '/snippets/$snippetId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCollectionsCollectionIdRoute =
+  AppCollectionsCollectionIdRouteImport.update({
+    id: '/collections/$collectionId',
+    path: '/collections/$collectionId',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppSnippetsSnippetIdEditRoute =
   AppSnippetsSnippetIdEditRouteImport.update({
     id: '/edit',
@@ -77,8 +90,10 @@ export interface FileRoutesByFullPath {
   '/favourites': typeof AppFavouritesRoute
   '/settings': typeof AppSettingsRoute
   '/auth/': typeof AuthIndexRoute
+  '/collections/$collectionId': typeof AppCollectionsCollectionIdRoute
   '/snippets/$snippetId': typeof AppSnippetsSnippetIdRouteWithChildren
   '/snippets/new': typeof AppSnippetsNewRoute
+  '/users/$userId': typeof AppUsersUserIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/snippets/$snippetId/edit': typeof AppSnippetsSnippetIdEditRoute
 }
@@ -88,8 +103,10 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/': typeof AppIndexRoute
   '/auth': typeof AuthIndexRoute
+  '/collections/$collectionId': typeof AppCollectionsCollectionIdRoute
   '/snippets/$snippetId': typeof AppSnippetsSnippetIdRouteWithChildren
   '/snippets/new': typeof AppSnippetsNewRoute
+  '/users/$userId': typeof AppUsersUserIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/snippets/$snippetId/edit': typeof AppSnippetsSnippetIdEditRoute
 }
@@ -101,8 +118,10 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_app/': typeof AppIndexRoute
   '/auth/': typeof AuthIndexRoute
+  '/_app/collections/$collectionId': typeof AppCollectionsCollectionIdRoute
   '/_app/snippets/$snippetId': typeof AppSnippetsSnippetIdRouteWithChildren
   '/_app/snippets/new': typeof AppSnippetsNewRoute
+  '/_app/users/$userId': typeof AppUsersUserIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_app/snippets/$snippetId/edit': typeof AppSnippetsSnippetIdEditRoute
 }
@@ -114,8 +133,10 @@ export interface FileRouteTypes {
     | '/favourites'
     | '/settings'
     | '/auth/'
+    | '/collections/$collectionId'
     | '/snippets/$snippetId'
     | '/snippets/new'
+    | '/users/$userId'
     | '/api/auth/$'
     | '/snippets/$snippetId/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -125,8 +146,10 @@ export interface FileRouteTypes {
     | '/settings'
     | '/'
     | '/auth'
+    | '/collections/$collectionId'
     | '/snippets/$snippetId'
     | '/snippets/new'
+    | '/users/$userId'
     | '/api/auth/$'
     | '/snippets/$snippetId/edit'
   id:
@@ -137,8 +160,10 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/'
     | '/auth/'
+    | '/_app/collections/$collectionId'
     | '/_app/snippets/$snippetId'
     | '/_app/snippets/new'
+    | '/_app/users/$userId'
     | '/api/auth/$'
     | '/_app/snippets/$snippetId/edit'
   fileRoutesById: FileRoutesById
@@ -200,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/users/$userId': {
+      id: '/_app/users/$userId'
+      path: '/users/$userId'
+      fullPath: '/users/$userId'
+      preLoaderRoute: typeof AppUsersUserIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/snippets/new': {
       id: '/_app/snippets/new'
       path: '/snippets/new'
@@ -212,6 +244,13 @@ declare module '@tanstack/react-router' {
       path: '/snippets/$snippetId'
       fullPath: '/snippets/$snippetId'
       preLoaderRoute: typeof AppSnippetsSnippetIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/collections/$collectionId': {
+      id: '/_app/collections/$collectionId'
+      path: '/collections/$collectionId'
+      fullPath: '/collections/$collectionId'
+      preLoaderRoute: typeof AppCollectionsCollectionIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/snippets/$snippetId/edit': {
@@ -240,8 +279,10 @@ interface AppRouteChildren {
   AppFavouritesRoute: typeof AppFavouritesRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppCollectionsCollectionIdRoute: typeof AppCollectionsCollectionIdRoute
   AppSnippetsSnippetIdRoute: typeof AppSnippetsSnippetIdRouteWithChildren
   AppSnippetsNewRoute: typeof AppSnippetsNewRoute
+  AppUsersUserIdRoute: typeof AppUsersUserIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -249,8 +290,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppFavouritesRoute: AppFavouritesRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppCollectionsCollectionIdRoute: AppCollectionsCollectionIdRoute,
   AppSnippetsSnippetIdRoute: AppSnippetsSnippetIdRouteWithChildren,
   AppSnippetsNewRoute: AppSnippetsNewRoute,
+  AppUsersUserIdRoute: AppUsersUserIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

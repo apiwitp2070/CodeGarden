@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { Link } from '@tanstack/react-router'
 import { Check, Copy, Star } from 'lucide-react'
@@ -11,9 +12,11 @@ interface SnippetCardProps {
   htmlPreview: string
   createdAt: Date
   authorName?: string
+  authorId?: string
   isFavorited?: boolean
   onFavoriteToggle?: (id: string) => void
   codeBody?: string
+  actions?: ReactNode
 }
 
 export function SnippetCard({
@@ -24,9 +27,11 @@ export function SnippetCard({
   htmlPreview,
   createdAt,
   authorName,
+  authorId,
   isFavorited,
   onFavoriteToggle,
-  codeBody
+  codeBody,
+  actions
 }: SnippetCardProps) {
   const [copied, setCopied] = useState(false)
 
@@ -63,7 +68,19 @@ export function SnippetCard({
           </h3>
           {authorName && (
             <p className="mt-1 font-space text-xs text-muted-foreground">
-              by <span className="font-medium text-primary">@{authorName}</span>
+              by{' '}
+              {authorId ? (
+                <Link
+                  to="/users/$userId"
+                  params={{ userId: authorId }}
+                  className="relative z-20 font-medium text-primary hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  @{authorName}
+                </Link>
+              ) : (
+                <span className="font-medium text-primary">@{authorName}</span>
+              )}
             </p>
           )}
         </div>
@@ -77,6 +94,7 @@ export function SnippetCard({
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
             </button>
           )}
+          {actions}
           {onFavoriteToggle && (
             <button
               className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-yellow-400"

@@ -38,6 +38,7 @@ function FavouritesPage() {
               htmlPreview={snippet.htmlPreview}
               createdAt={new Date(snippet.createdAt!)}
               authorName={snippet.author?.name ?? undefined}
+              authorId={snippet.author?.id ?? undefined}
               isFavorited={true}
               onFavoriteToggle={handleToggleFavorite}
               codeBody={snippet.codeBody}
