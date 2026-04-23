@@ -1,3 +1,0 @@
--- Add 'rejected' to snippet_comments status enum
--- Drizzle text() enums are TypeScript-only and do not generate a DB CHECK constraint,
--- so no SQL change is required. This file exists to keep migration history sequential.
