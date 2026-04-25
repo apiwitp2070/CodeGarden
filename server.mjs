@@ -18,7 +18,7 @@ const mimeTypes = {
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
   '.woff': 'font/woff',
-  '.woff2': 'font/woff2',
+  '.woff2': 'font/woff2'
 }
 
 const { default: app } = await import('./dist/server/server.js')
@@ -32,7 +32,9 @@ const server = createServer(async (req, res) => {
       const ext = extname(filePath)
       res.writeHead(200, {
         'Content-Type': mimeTypes[ext] ?? 'application/octet-stream',
-        'Cache-Control': req.url.includes('/assets/') ? 'public, max-age=31536000, immutable' : 'no-cache',
+        'Cache-Control': req.url.includes('/assets/')
+          ? 'public, max-age=31536000, immutable'
+          : 'no-cache'
       })
       res.end(data)
       return
@@ -43,11 +45,13 @@ const server = createServer(async (req, res) => {
   const request = new Request(`http://${req.headers.host}${req.url}`, {
     method: req.method,
     headers: req.headers,
-    body: ['GET', 'HEAD'].includes(req.method) ? undefined : await new Promise((resolve) => {
-      const chunks = []
-      req.on('data', (c) => chunks.push(c))
-      req.on('end', () => resolve(Buffer.concat(chunks)))
-    }),
+    body: ['GET', 'HEAD'].includes(req.method)
+      ? undefined
+      : await new Promise((resolve) => {
+          const chunks = []
+          req.on('data', (c) => chunks.push(c))
+          req.on('end', () => resolve(Buffer.concat(chunks)))
+        })
   })
 
   const response = await app.fetch(request)

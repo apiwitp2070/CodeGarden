@@ -14,11 +14,7 @@ function UserProfilePage() {
     <div className="flex flex-col gap-8">
       <div className="flex items-center gap-4">
         {user.image ? (
-          <img
-            src={user.image}
-            alt={user.name}
-            className="size-16 rounded-full object-cover"
-          />
+          <img src={user.image} alt={user.name} className="size-16 rounded-full object-cover" />
         ) : (
           <div className="flex size-16 items-center justify-center rounded-full bg-primary/10 font-display text-2xl font-bold text-primary">
             {user.name.charAt(0).toUpperCase()}

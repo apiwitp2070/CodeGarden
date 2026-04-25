@@ -7,10 +7,7 @@ import { ulid } from 'ulid'
 
 export const getUserSettings = createServerFn({ method: 'GET' }).handler(async () => {
   const session = await requireCurrentSession()
-  const [row] = await db
-    .select()
-    .from(userSettings)
-    .where(eq(userSettings.userId, session.user.id))
+  const [row] = await db.select().from(userSettings).where(eq(userSettings.userId, session.user.id))
   return row ?? { languagePreferences: [] as string[] }
 })
 

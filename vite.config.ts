@@ -13,8 +13,8 @@ const config = defineConfig({
     tsconfigPaths({ projects: ['./tsconfig.json'] }),
     tailwindcss(),
     tanstackStart(),
-    viteReact(),
-  ],
+    viteReact()
+  ]
 })
 
 export default config

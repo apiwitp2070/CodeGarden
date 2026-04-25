@@ -22,7 +22,7 @@ function CollectionPage() {
       onConfirm: async () => {
         await deleteCollection({ data: { id: collection.id } })
         await router.navigate({ to: '/' })
-      },
+      }
     })
   }
 
@@ -56,9 +56,7 @@ function CollectionPage() {
           <p className="font-display text-2xl font-semibold text-foreground">
             No snippets in this collection
           </p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Add snippets from their detail page.
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">Add snippets from their detail page.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 2xl:grid-cols-3">

@@ -88,10 +88,7 @@ export const getSnippetCollections = createServerFn({ method: 'GET' })
       .from(collectionSnippets)
       .innerJoin(collections, eq(collectionSnippets.collectionId, collections.id))
       .where(
-        and(
-          eq(collectionSnippets.snippetId, snippetId),
-          eq(collections.authorId, session.user.id)
-        )
+        and(eq(collectionSnippets.snippetId, snippetId), eq(collections.authorId, session.user.id))
       )
     return rows
   })

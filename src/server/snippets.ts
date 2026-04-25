@@ -11,7 +11,13 @@ type Author = { id: string; name: string; image: string | null } | null
 
 export async function enrichSnippets<T extends { snippet: Snippet; author: Author }>(
   rows: T[]
-): Promise<(Snippet & { author: Author; tags: { id: string; name: string; slug: string }[]; htmlPreview: string })[]> {
+): Promise<
+  (Snippet & {
+    author: Author
+    tags: { id: string; name: string; slug: string }[]
+    htmlPreview: string
+  })[]
+> {
   if (rows.length === 0) return []
   const ids = rows.map((r) => r.snippet.id)
 

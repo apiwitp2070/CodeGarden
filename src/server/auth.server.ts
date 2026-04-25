@@ -13,7 +13,7 @@ function getAuthRedirectHref() {
 
 export async function getCurrentSession() {
   return auth.api.getSession({
-    headers: getRequest().headers,
+    headers: getRequest().headers
   })
 }
 
@@ -22,7 +22,7 @@ export async function requireCurrentSession() {
 
   if (!session?.user) {
     throw redirect({
-      href: getAuthRedirectHref(),
+      href: getAuthRedirectHref()
     })
   }
 
