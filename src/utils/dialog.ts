@@ -1,4 +1,4 @@
-import { defaultConfirmDialogText } from '@/consts/common/dialog'
+import { defaultConfirmDialogText } from '@/consts/dialog'
 import type { AlertDialogOptions } from '@/interfaces/common/dialog'
 
 let setPendingDialog: React.Dispatch<React.SetStateAction<AlertDialogOptions | null>>

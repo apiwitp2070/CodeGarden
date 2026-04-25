@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { Check } from 'lucide-react'
 import { getViewerSession } from '@/server/auth'
 import { getUserSettings, saveUserSettings } from '@/server/settings'
-import { LANGUAGES } from '@/lib/languages'
+import { LANGUAGES } from '@/consts/languages'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 

@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { FolderOpen, Home, Plus, Search, Star, User } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
 import { getMyCollections, createCollection } from '@/server/collections'
-import { CreateCollectionDialog } from '@/components/common/create-collection-dialog'
+import { CreateCollectionDialog } from '@/components/create-collection-dialog'
 
 type Collection = { id: string; name: string; createdAt: Date | null }
 

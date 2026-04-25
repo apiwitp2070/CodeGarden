@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { CreateCollectionDialog } from '@/components/common/create-collection-dialog'
+import { CreateCollectionDialog } from '@/components/create-collection-dialog'
 import {
   getSnippetComments,
   createComment,

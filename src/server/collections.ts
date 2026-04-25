@@ -1,9 +1,9 @@
 import { createServerFn } from '@tanstack/react-start'
 import { db } from '@/db'
-import { collections, collectionSnippets, snippets, users, snippetTags, tags } from '@/db/schema'
-import { and, desc, eq, inArray } from 'drizzle-orm'
+import { collections, collectionSnippets, snippets, users } from '@/db/schema'
+import { and, desc, eq } from 'drizzle-orm'
 import { requireCurrentSession } from './auth.server'
-import { getHighlightedHtml } from './highlight'
+import { enrichSnippets } from './snippets'
 
 export const getMyCollections = createServerFn({ method: 'GET' }).handler(async () => {
   const session = await requireCurrentSession()
@@ -115,33 +115,5 @@ export const getCollection = createServerFn({ method: 'GET' })
       .where(eq(collectionSnippets.collectionId, collectionId))
       .orderBy(desc(collectionSnippets.addedAt))
 
-    const snippetIds = rows.map((r) => r.snippet.id)
-    const tagRows =
-      snippetIds.length > 0
-        ? await db
-            .select({ snippetId: snippetTags.snippetId, tag: tags })
-            .from(snippetTags)
-            .innerJoin(tags, eq(snippetTags.tagId, tags.id))
-            .where(inArray(snippetTags.snippetId, snippetIds))
-        : []
-
-    const collectionSnippetsWithPreviews = await Promise.all(
-      rows.map(async ({ snippet, author }) => {
-        const htmlPreview = await getHighlightedHtml(
-          snippet.codeBody.split('\n').slice(0, 8).join('\n'),
-          snippet.language
-        )
-        const snippetTagList = tagRows
-          .filter((t) => t.snippetId === snippet.id)
-          .map((t) => t.tag)
-        return {
-          ...snippet,
-          author: author?.id ? author : null,
-          tags: snippetTagList,
-          htmlPreview
-        }
-      })
-    )
-
-    return { collection, snippets: collectionSnippetsWithPreviews }
+    return { collection, snippets: await enrichSnippets(rows) }
   })

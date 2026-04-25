@@ -39,7 +39,6 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Nocturnal Architect Surface Tiers */
   --color-surface-base: var(--surface-base);
   --color-surface-container-low: var(--surface-container-low);
   --color-surface-container: var(--surface-container);
@@ -51,10 +50,8 @@
   --radius-sm: 0.25rem;
 }
 
-/* Base definitions in default root for the Nocturnal Architect theme (Always dark mode) */
 :root,
 .dark {
-  /* Shadcn standard core semantic variables mapped to Deep Navy / Emerald hex approximation using HSL/OKLCH or direct Hex if not shadcn-specific */
   --background: #060e20;
   --foreground: #c8d1e0; /* primary text - muted from white */
 
@@ -86,7 +83,6 @@
 
   --radius: 0.5rem;
 
-  /* Nocturnal specific surface tiers (for no-line usage) */
   --surface-base: #060e20;
   --surface-container-low: #0c1629;
   --surface-container: #111d33;
@@ -95,7 +91,7 @@
 }
 
 /* ─── Accent colour themes ─────────────────────────────────────────────────── */
-/* Default (no data-accent) = emerald, already defined in :root above          */
+/* Default (no data-accent) = emerald, defined in :root above                   */
 
 [data-accent='sky'] {
   --primary: #7dd3fc; /* sky-300 */
@@ -146,22 +142,9 @@
     color: var(--foreground);
     @apply font-sans antialiased;
   }
-}
 
-/* Glassmorphism helpers for the Nocturnal Architect theme */
-.glass-panel {
-  background-color: var(--popover);
-  backdrop-filter: blur(16px);
-  box-shadow: 0px 4px 64px rgba(200, 209, 224, 0.08); /* Ambient shadow */
-}
-
-.cm-editor {
-  background: var(--surface-recessed);
-  color: var(--foreground);
-}
-
-.cm-gutters {
-  background: transparent !important;
-  border: 0 !important;
-  color: var(--muted-foreground);
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
 }

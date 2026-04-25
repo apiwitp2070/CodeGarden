@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { CommentForm } from '@/components/comment-form'
-import { getLanguageExtension } from '@/lib/codemirror-langs'
+import { getLanguageExtension } from '#/lib/codemirror'
 import { dialog } from '@/utils/dialog'
 
 interface Comment {
@@ -122,7 +122,7 @@ export function CommentCard({
         } finally {
           setIsPending(false)
         }
-      },
+      }
     })
   }
 
@@ -213,9 +213,7 @@ export function CommentCard({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 {canEdit && (
-                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                    Edit
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsEditing(true)}>Edit</DropdownMenuItem>
                 )}
                 {canDelete && (
                   <DropdownMenuItem

@@ -4,7 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
+  DialogFooter
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,7 +18,7 @@ interface CreateCollectionDialogProps {
 export function CreateCollectionDialog({
   open,
   onOpenChange,
-  onConfirm,
+  onConfirm
 }: CreateCollectionDialogProps) {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)

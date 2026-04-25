@@ -4,6 +4,39 @@ import { snippets, tags, snippetTags, users, userFavorites } from '@/db/schema'
 import { and, desc, eq, inArray, or, sql } from 'drizzle-orm'
 import { getHighlightedHtml } from './highlight'
 import { getCurrentSession, requireCurrentSession } from './auth.server'
+import type { InferSelectModel } from 'drizzle-orm'
+
+type Snippet = InferSelectModel<typeof snippets>
+type Author = { id: string; name: string; image: string | null } | null
+
+export async function enrichSnippets<T extends { snippet: Snippet; author: Author }>(
+  rows: T[]
+): Promise<(Snippet & { author: Author; tags: { id: string; name: string; slug: string }[]; htmlPreview: string })[]> {
+  if (rows.length === 0) return []
+  const ids = rows.map((r) => r.snippet.id)
+
+  const tagRows = await db
+    .select({ snippetId: snippetTags.snippetId, tag: tags })
+    .from(snippetTags)
+    .innerJoin(tags, eq(snippetTags.tagId, tags.id))
+    .where(inArray(snippetTags.snippetId, ids))
+
+  return Promise.all(
+    rows.map(async ({ snippet, author }) => {
+      const snippetTagList = tagRows.filter((t) => t.snippetId === snippet.id).map((t) => t.tag)
+      const htmlPreview = await getHighlightedHtml(
+        snippet.codeBody.split('\n').slice(0, 8).join('\n'),
+        snippet.language
+      )
+      return {
+        ...snippet,
+        author: author?.id ? author : null,
+        tags: snippetTagList,
+        htmlPreview
+      }
+    })
+  )
+}
 
 export const listSnippets = createServerFn({ method: 'GET' })
   .inputValidator((d: { q?: string; limit?: number; offset?: number; languages?: string[] }) => d)
@@ -77,40 +110,8 @@ export const listSnippets = createServerFn({ method: 'GET' })
     }
 
     const results = await query
-    const snippetIds = results.map((r) => r.snippet.id)
 
-    // Fetch relations
-    const relations =
-      snippetIds.length > 0
-        ? await db
-            .select({
-              snippetId: snippetTags.snippetId,
-              tag: tags
-            })
-            .from(snippetTags)
-            .innerJoin(tags, eq(snippetTags.tagId, tags.id))
-            .where(inArray(snippetTags.snippetId, snippetIds))
-        : []
-
-    const snippetsWithTags = await Promise.all(
-      results.map(async ({ snippet, author }) => {
-        const snippetTags = relations.filter((r) => r.snippetId === snippet.id).map((r) => r.tag)
-
-        const htmlPreview = await getHighlightedHtml(
-          snippet.codeBody.split('\n').slice(0, 8).join('\n'),
-          snippet.language
-        )
-
-        return {
-          ...snippet,
-          author: author?.id ? author : null,
-          tags: snippetTags,
-          htmlPreview
-        }
-      })
-    )
-
-    return snippetsWithTags
+    return enrichSnippets(results)
   })
 
 export const getSnippet = createServerFn({ method: 'GET' })
@@ -196,26 +197,8 @@ export const getUserFavorites = createServerFn({ method: 'GET' }).handler(async 
     )
     .orderBy(desc(userFavorites.createdAt))
 
-  return Promise.all(
-    results.map(async ({ snippet, author }) => {
-      const tagRows = await db
-        .select({ tag: tags })
-        .from(snippetTags)
-        .innerJoin(tags, eq(snippetTags.tagId, tags.id))
-        .where(eq(snippetTags.snippetId, snippet.id))
-      const htmlPreview = await getHighlightedHtml(
-        snippet.codeBody.split('\n').slice(0, 8).join('\n'),
-        snippet.language
-      )
-      return {
-        ...snippet,
-        author: author?.id ? author : null,
-        tags: tagRows.map((r) => r.tag),
-        htmlPreview,
-        isFavorited: true as const
-      }
-    })
-  )
+  const enriched = await enrichSnippets(results)
+  return enriched.map((s) => ({ ...s, isFavorited: true as const }))
 })
 
 export const getUserProfile = createServerFn({ method: 'GET' })
@@ -240,15 +223,8 @@ export const getUserProfile = createServerFn({ method: 'GET' })
       .where(and(eq(snippets.authorId, userId), visibilityFilter))
       .orderBy(desc(snippets.createdAt))
 
-    const withPreviews = await Promise.all(
-      userSnippets.map(async ({ snippet }) => {
-        const htmlPreview = await getHighlightedHtml(
-          snippet.codeBody.split('\n').slice(0, 8).join('\n'),
-          snippet.language
-        )
-        return { ...snippet, author: user, tags: [] as { id: string; name: string }[], htmlPreview }
-      })
-    )
+    const rows = userSnippets.map(({ snippet }) => ({ snippet, author: user }))
+    const withPreviews = await enrichSnippets(rows)
 
     return { user, snippets: withPreviews, isOwner }
   })

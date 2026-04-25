@@ -5,33 +5,10 @@ import { CodeEditor } from './code-editor'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Textarea } from './ui/textarea'
-import { javascript } from '@codemirror/lang-javascript'
-import { python } from '@codemirror/lang-python'
-import { html } from '@codemirror/lang-html'
-import { css } from '@codemirror/lang-css'
-import { json } from '@codemirror/lang-json'
-import type { Extension } from '@codemirror/state'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Lock } from 'lucide-react'
-import { LANGUAGES } from '@/lib/languages'
-
-function getExtensions(language: string): Extension[] {
-  switch (language) {
-    case 'javascript':
-    case 'typescript':
-      return [javascript({ typescript: language === 'typescript' })]
-    case 'python':
-      return [python()]
-    case 'html':
-      return [html()]
-    case 'css':
-      return [css()]
-    case 'json':
-      return [json()]
-    default:
-      return []
-  }
-}
+import { LANGUAGES } from '@/consts/languages'
+import { getLanguageExtension } from '@/lib/codemirror'
 
 const snippetSchema = z.object({
   title: z.string().min(1, 'Title is required.'),
@@ -214,7 +191,7 @@ export function SnippetForm({
                   onChange={field.onChange}
                   minHeight="400px"
                   placeholder="// Write your snippet here…"
-                  extensions={getExtensions(language)}
+                  extensions={getLanguageExtension(language)}
                 />
               </div>
             )}

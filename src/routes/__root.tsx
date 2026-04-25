@@ -2,7 +2,7 @@ import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/reac
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { ConfirmDialog } from '@/components/common/confirm-dialog'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import TanStackQueryDevtools from '@/integrations/tanstack-query/devtools'
 import appCss from '@/styles.css?url'
 import { useEffect } from 'react'

@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -131,9 +131,11 @@ function AuthRoute() {
                   <path d="m3 15 2 2 4-4" />
                 </svg>
               </div>
-              <span className="font-display text-xl font-bold text-foreground">
-                Code<span className="text-primary">Garden</span>
-              </span>
+              <Link to="/" className="font-display text-xl font-bold text-foreground">
+                <span className="font-display text-xl font-bold text-foreground">
+                  Code<span className="text-primary">Garden</span>
+                </span>
+              </Link>
             </div>
 
             <div className="mb-8 grid grid-cols-2 border-b border-surface-container-high">

@@ -9,15 +9,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle
-} from '#/components/ui/alert-dialog'
+} from '@/components/ui/alert-dialog'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { _registerDialog } from '#/utils/dialog'
-import type { AlertDialogOptions, AlertVariant } from '#/interfaces/common/dialog'
+import { _registerDialog } from '@/utils/dialog'
+import type { AlertDialogOptions, AlertVariant } from '@/interfaces/common/dialog'
 import type { LucideIcon } from 'lucide-react'
 import { AlertTriangleIcon, CheckCircle2Icon, InfoIcon, XCircleIcon } from 'lucide-react'
-import { defaultConfirmDialogText } from '#/consts/common/dialog'
-import type { ButtonVariant } from '#/components/ui/button'
+import { defaultConfirmDialogText } from '@/consts/dialog'
+import type { ButtonVariant } from '@/components/ui/button'
 
 interface VariantStyleProps {
   icon?: LucideIcon

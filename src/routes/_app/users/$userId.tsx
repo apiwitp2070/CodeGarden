@@ -49,8 +49,8 @@ function UserProfilePage() {
               tags={snippet.tags}
               htmlPreview={snippet.htmlPreview || ''}
               createdAt={new Date(snippet.createdAt!)}
-              authorName={snippet.author.name}
-              authorId={snippet.author.id}
+              authorName={snippet.author?.name ?? ''}
+              authorId={snippet.author?.id ?? ''}
               codeBody={snippet.codeBody}
             />
           ))}

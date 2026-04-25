@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CodeEditor } from '@/components/code-editor'
-import { getLanguageExtension } from '@/lib/codemirror-langs'
+import { getLanguageExtension } from '#/lib/codemirror'
 
 type CommentType = 'comment' | 'suggestion'
 
