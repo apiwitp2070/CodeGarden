@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
+import { useServerFn } from '@tanstack/react-start'
 import { SnippetForm } from '@/components/snippet-form'
 import { getEditableSnippet } from '@/server/snippets'
 import { updateSnippet, deleteSnippet } from '@/server/mutations'
@@ -21,6 +22,8 @@ function EditSnippet() {
     keywords: string[] | null
     visibility: 'public' | 'private'
   }
+  const update = useServerFn(updateSnippet)
+  const remove = useServerFn(deleteSnippet)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (values: {
@@ -33,7 +36,7 @@ function EditSnippet() {
   }) => {
     setIsSubmitting(true)
     try {
-      await updateSnippet({
+      await update({
         data: {
           id: snippet.id,
           title: values.title,
@@ -59,7 +62,7 @@ function EditSnippet() {
       title: 'Delete Snippet',
       description: 'Are you sure you want to delete this snippet? This cannot be undone.',
       confirmText: 'Delete',
-      onConfirm: () => deleteSnippet({ data: { id: snippet.id } })
+      onConfirm: () => remove({ data: { id: snippet.id } })
     })
   }
 

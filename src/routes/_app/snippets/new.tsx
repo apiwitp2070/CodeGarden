@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
+import { useServerFn } from '@tanstack/react-start'
 import { SnippetForm } from '@/components/snippet-form'
 import { createSnippet } from '@/server/mutations'
 import { requireViewerSession } from '@/server/auth'
@@ -10,6 +11,7 @@ export const Route = createFileRoute('/_app/snippets/new')({
 })
 
 function CreateSnippet() {
+  const create = useServerFn(createSnippet)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (values: {
@@ -22,7 +24,7 @@ function CreateSnippet() {
   }) => {
     setIsSubmitting(true)
     try {
-      await createSnippet({
+      await create({
         data: {
           title: values.title,
           description: values.description || undefined,

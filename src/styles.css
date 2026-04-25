@@ -148,3 +148,16 @@
     cursor: pointer;
   }
 }
+
+/* Override default Codemirror style below */
+
+.cm-editor {
+  background: var(--surface-recessed);
+  color: var(--foreground);
+}
+
+.cm-gutters {
+  background: transparent !important;
+  border: 0 !important;
+  color: var(--muted-foreground);
+}

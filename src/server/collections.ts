@@ -3,7 +3,7 @@ import { db } from '@/db'
 import { collections, collectionSnippets, snippets, users } from '@/db/schema'
 import { and, desc, eq } from 'drizzle-orm'
 import { requireCurrentSession } from './auth.server'
-import { enrichSnippets } from './snippets'
+import { enrichSnippets } from './enrich'
 
 export const getMyCollections = createServerFn({ method: 'GET' }).handler(async () => {
   const session = await requireCurrentSession()
@@ -88,7 +88,10 @@ export const getSnippetCollections = createServerFn({ method: 'GET' })
       .from(collectionSnippets)
       .innerJoin(collections, eq(collectionSnippets.collectionId, collections.id))
       .where(
-        and(eq(collectionSnippets.snippetId, snippetId), eq(collections.authorId, session.user.id))
+        and(
+          eq(collectionSnippets.snippetId, snippetId),
+          eq(collections.authorId, session.user.id)
+        )
       )
     return rows
   })
